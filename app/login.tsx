@@ -8,22 +8,66 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { defaultStyles } from "@/constants/Styles";
 import Colors from "@/constants/Colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSignIn, useSignUp } from "@clerk/clerk-expo";
 
 const login = () => {
   const { type } = useLocalSearchParams<{ type: string }>();
   const [loading, setLoading] = useState(false);
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const { signIn, isLoaded, setActive } = useSignIn();
+  const {
+    signUp,
+    isLoaded: signUpLoaded,
+    setActive: setActiveSignUp,
+  } = useSignUp();
 
-  const onSignUpPress = async () => {};
+  const onSignUpPress = async () => {
+    if (!signUpLoaded) return;
 
-  const onLoginPress = async () => {};
+    setLoading(true);
+
+    try {
+      const result = await signUp.create({
+        emailAddress,
+        password,
+      });
+
+      setActiveSignUp({
+        session: result.createdSessionId,
+      });
+    } catch (err: any) {
+      Alert.alert(err.errors[0].message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSignInPress = async () => {
+    if (!isLoaded) return;
+
+    setLoading(true);
+
+    try {
+      const result = await signIn.create({
+        identifier: emailAddress,
+        password,
+      });
+      setActive({
+        session: result.createdSessionId,
+      });
+    } catch (err: any) {
+      Alert.alert(err.errors[0].message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -66,7 +110,7 @@ const login = () => {
       {type === "login" ? (
         <TouchableOpacity
           style={[defaultStyles.btn, styles.btnPrimary]}
-          onPress={onLoginPress}
+          onPress={onSignInPress}
         >
           <Text style={styles.btnPrimaryText}>ログイン</Text>
         </TouchableOpacity>

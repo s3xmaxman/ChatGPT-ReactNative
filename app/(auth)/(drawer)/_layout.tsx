@@ -1,14 +1,55 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem,
+} from "@react-navigation/drawer";
 import React from "react";
 import { Drawer } from "expo-router/drawer";
 import Colors from "@/constants/Colors";
-import { Link, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Link, useNavigation, useRouter } from "expo-router";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { DrawerActions } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+export const CustomDrawerContent = (props: any) => {
+  const { bottom, top } = useSafeAreaInsets();
+  return (
+    <View style={{ flex: 1, paddingTop: top }}>
+      <View>
+        <Text>Header</Text>
+      </View>
+      <DrawerContentScrollView {...props}>
+        <DrawerItemList {...props} />
+      </DrawerContentScrollView>
+    </View>
+  );
+};
 
 const Layout = () => {
+  const navigation = useNavigation();
   const router = useRouter();
   return (
-    <Drawer>
+    <Drawer
+      drawerContent={CustomDrawerContent}
+      screenOptions={{
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.toggleDrawer)}
+            style={{ marginLeft: 16 }}
+          >
+            <FontAwesome6 name="grip-lines" size={20} color={Colors.grey} />
+          </TouchableOpacity>
+        ),
+        headerStyle: {
+          backgroundColor: Colors.light,
+        },
+        headerShadowVisible: false,
+        drawerActiveBackgroundColor: Colors.selected,
+        drawerActiveTintColor: "#000",
+        drawerInactiveTintColor: "#000",
+      }}
+    >
       <Drawer.Screen
         name="(chat)/new"
         getId={() => Math.random().toString()}

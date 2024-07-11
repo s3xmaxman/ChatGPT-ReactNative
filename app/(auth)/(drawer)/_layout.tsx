@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -16,12 +23,36 @@ export const CustomDrawerContent = (props: any) => {
   const { bottom, top } = useSafeAreaInsets();
   return (
     <View style={{ flex: 1, paddingTop: top }}>
-      <View>
+      <View style={{ backgroundColor: "#fff", paddingBottom: 10 }}>
+        <View style={styles.searchSection}>
+          <Ionicons
+            name="search"
+            size={20}
+            style={styles.searchIcon}
+            color={Colors.greyLight}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Search"
+            underlineColorAndroid="transparent"
+          />
+        </View>
         <Text>Header</Text>
       </View>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
+
+      <View style={{ padding: 16, paddingBottom: bottom }}>
+        <Link href="/(auth)/(modal)/settings" asChild>
+          <TouchableOpacity style={styles.footer}>
+            <Image
+              source={require("@/assets/images/avatar.png")}
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
+        </Link>
+      </View>
     </View>
   );
 };

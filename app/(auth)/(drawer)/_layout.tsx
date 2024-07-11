@@ -43,12 +43,24 @@ export const CustomDrawerContent = (props: any) => {
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
 
-      <View style={{ padding: 16, paddingBottom: bottom }}>
+      <View
+        style={{
+          padding: 16,
+          paddingBottom: 10 + bottom,
+          backgroundColor: Colors.light,
+        }}
+      >
         <Link href="/(auth)/(modal)/settings" asChild>
           <TouchableOpacity style={styles.footer}>
             <Image
               source={require("@/assets/images/avatar.png")}
               style={styles.avatar}
+            />
+            <Text style={styles.userName}>s3xmaxman</Text>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={24}
+              color={Colors.greyLight}
             />
           </TouchableOpacity>
         </Link>

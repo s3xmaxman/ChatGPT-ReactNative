@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
 import { defaultStyles } from "@/constants/Styles";
 import HeaderDropDown from "@/components/HeaderDropDown";
+import MessageInput from "@/components/MessageInput";
 
 const Page = () => {
   const { signOut } = useAuth();
@@ -27,7 +28,11 @@ const Page = () => {
           ),
         }}
       />
-      <Button title="Sign Out" onPress={() => signOut()} />
+      <View style={{ flex: 1 }}>
+        <Text>Dummy Content</Text>
+        <Button title="Sign Out" onPress={() => signOut()} />
+      </View>
+      <MessageInput />
     </View>
   );
 };

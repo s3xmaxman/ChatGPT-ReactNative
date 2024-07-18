@@ -1,4 +1,10 @@
-import { View, Text, Button } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
@@ -9,6 +15,9 @@ import MessageInput from "@/components/MessageInput";
 const Page = () => {
   const { signOut } = useAuth();
   const [gptVersion, setGptVersion] = useState("3.5");
+  const getCompletion = () => {
+    console.log("getCompletion");
+  };
   return (
     <View style={defaultStyles.pageContainer}>
       <Stack.Screen
@@ -32,7 +41,12 @@ const Page = () => {
         <Text>Dummy Content</Text>
         <Button title="Sign Out" onPress={() => signOut()} />
       </View>
-      <MessageInput />
+      <KeyboardAvoidingView
+        keyboardVerticalOffset={70}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <MessageInput onShouldSendMessage={getCompletion} />
+      </KeyboardAvoidingView>
     </View>
   );
 };

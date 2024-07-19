@@ -27,11 +27,11 @@ const MessageInput = ({ onShouldSendMessage }: MessageInputProps) => {
   const expanded = useSharedValue(0);
 
   const expandItems = () => {
-    expanded.value = withTiming(1, { duration: 300 });
+    expanded.value = withTiming(1, { duration: 400 });
   };
 
   const collapseItems = () => {
-    expanded.value = withTiming(0, { duration: 300 });
+    expanded.value = withTiming(0, { duration: 400 });
   };
 
   const onChangeText = (text: string) => {

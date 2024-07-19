@@ -11,10 +11,13 @@ import { Stack } from "expo-router";
 import { defaultStyles } from "@/constants/Styles";
 import HeaderDropDown from "@/components/HeaderDropDown";
 import MessageInput from "@/components/MessageInput";
+import MessageIdeas from "@/components/MessageIdeas";
+import { Message } from "@/utils/Interfaces";
 
 const Page = () => {
   const { signOut } = useAuth();
   const [gptVersion, setGptVersion] = useState("3.5");
+  const [messages, setMessages] = useState<Message[]>([]);
   const getCompletion = () => {
     console.log("getCompletion");
   };
@@ -30,15 +33,14 @@ const Page = () => {
               }}
               selected={gptVersion}
               items={[
-                { key: "3.5", title: "GPT4-o mini", icon: "bolt" },
-                { key: "4", title: "GPT4-o", icon: "sparkles" },
+                { key: "3.5", title: "GPT-4o mini", icon: "bolt" },
+                { key: "4", title: "GPT-4o", icon: "sparkles" },
               ]}
             />
           ),
         }}
       />
       <View style={{ flex: 1 }}>
-        <Text>Dummy Content</Text>
         <Button title="Sign Out" onPress={() => signOut()} />
       </View>
       <KeyboardAvoidingView
@@ -51,6 +53,7 @@ const Page = () => {
           width: "100%",
         }}
       >
+        {messages.length === 0 && <MessageIdeas onSelectCard={getCompletion} />}
         <MessageInput onShouldSendMessage={getCompletion} />
       </KeyboardAvoidingView>
     </View>

@@ -10,7 +10,7 @@ export interface Message {
   prompt?: string;
 }
 
-export interface Chart {
+export interface Chat {
   id: number;
   title: string;
 }

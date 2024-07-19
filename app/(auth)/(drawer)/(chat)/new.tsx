@@ -30,8 +30,8 @@ const Page = () => {
               }}
               selected={gptVersion}
               items={[
-                { key: "3.5", title: "GPT-3.5", icon: "bolt" },
-                { key: "4", title: "GPT-4", icon: "sparkles" },
+                { key: "3.5", title: "GPT4-o mini", icon: "bolt" },
+                { key: "4", title: "GPT4-o", icon: "sparkles" },
               ]}
             />
           ),

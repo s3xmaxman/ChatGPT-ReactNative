@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "@clerk/clerk-expo";
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { defaultStyles } from "@/constants/Styles";
 import HeaderDropDown from "@/components/HeaderDropDown";
 import MessageInput from "@/components/MessageInput";
@@ -17,6 +17,8 @@ import MessageIdeas from "@/components/MessageIdeas";
 import { Message, Role } from "@/utils/Interfaces";
 import ChatMessage from "@/components/ChatMessage";
 import { FlashList } from "@shopify/flash-list";
+import { useMMKVString } from "react-native-mmkv";
+import { keyStorage, storage } from "@/utils/Storage";
 
 const DUMMY_MESSAGES: Message[] = [
   {
@@ -32,8 +34,14 @@ const DUMMY_MESSAGES: Message[] = [
 const Page = () => {
   const { signOut } = useAuth();
   const [height, setHeight] = useState(0);
-  const [gptVersion, setGptVersion] = useState("3.5");
-  const [messages, setMessages] = useState<Message[]>(DUMMY_MESSAGES);
+  const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [key, setKey] = useMMKVString("apiKey", keyStorage);
+  const [organization, setOrganization] = useMMKVString("org", keyStorage);
+
+  if (!key || key === "" || !organization || organization === "") {
+    return <Redirect href={"/(auth)/(modal)/settings"} />;
+  }
 
   const getCompletion = () => {
     console.log("getCompletion");
@@ -64,7 +72,7 @@ const Page = () => {
         }}
       />
       <View style={styles.page} onLayout={onLayout}>
-        {messages.length == 0 && (
+        {messages.length === 0 && (
           <View style={[styles.logoContainer, { marginTop: height / 2 - 100 }]}>
             <Image
               source={require("@/assets/images/logo-white.png")}

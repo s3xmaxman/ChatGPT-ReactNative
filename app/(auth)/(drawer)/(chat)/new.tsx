@@ -39,9 +39,9 @@ const Page = () => {
   const [key, setKey] = useMMKVString("apiKey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
 
-  if (!key || key === "" || !organization || organization === "") {
-    return <Redirect href={"/(auth)/(modal)/settings"} />;
-  }
+  // if (!key || key === "" || !organization || organization === "") {
+  //   return <Redirect href={"/(auth)/(modal)/settings"} />;
+  // }
 
   const getCompletion = () => {
     console.log("getCompletion");

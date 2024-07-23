@@ -36,9 +36,9 @@ const Page = () => {
   const { signOut } = useAuth();
   const [height, setHeight] = useState(0);
   const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [key, setKey] = useMMKVString("apiKey", keyStorage);
+  const [key, setKey] = useMMKVString("apikey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   if (!key || key === "" || !organization || organization === "") {
     return <Redirect href={"/(auth)/(modal)/settings"} />;
@@ -52,7 +52,6 @@ const Page = () => {
   }, []);
 
   const getCompletion = (message: string) => {
-    console.log("getCompletion");
     if (messages.length === 0) {
     }
 
@@ -70,20 +69,19 @@ const Page = () => {
 
   useEffect(() => {
     const handleMessage = (payload: any) => {
-      setMessages((messages) => {
-        const newMessages = payload.choices[0]?.delta.content;
+      const newMessages = payload.choices[0]?.delta.content;
 
-        if (newMessages) {
-          messages[length - 1].content += newMessages;
+      if (newMessages) {
+        console.log("Received message:", newMessages);
+        setMessages((messages) => {
+          messages[messages.length - 1].content += newMessages;
           return [...messages];
-        }
+        });
+      }
 
-        if (payload.choices[0].finish_reason) {
-          console.log("stream ended");
-        }
-
-        return messages;
-      });
+      if (payload.choices[0].finish_reason) {
+        console.log("stream ended");
+      }
     };
 
     openAI.chat.addListener("onChatMessageReceived", handleMessage);

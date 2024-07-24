@@ -1,8 +1,15 @@
-import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import React from "react";
 import { Message, Role } from "@/utils/Interfaces";
 import Colors from "@/constants/Colors";
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
+import * as ContextMenu from "zeego/context-menu";
 const ChatMessage = ({
   content,
   role,
@@ -32,7 +39,16 @@ const ChatMessage = ({
       ) : (
         <>
           {content === "" && imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.previewImage} />
+            <ContextMenu.Root>
+              <ContextMenu.Trigger>
+                <Pressable>
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.previewImage}
+                  />
+                </Pressable>
+              </ContextMenu.Trigger>
+            </ContextMenu.Root>
           ) : (
             <Text>{content}</Text>
           )}

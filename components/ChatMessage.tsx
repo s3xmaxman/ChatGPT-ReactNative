@@ -1,6 +1,11 @@
-import React from "react";
-import { Message, Role } from "@/utils/Interfaces";
 import Colors from "@/constants/Colors";
+import {
+  copyImageToClipboard,
+  downloadAndSaveImage,
+  shareImage,
+} from "@/utils/Image";
+import { Message, Role } from "@/utils/Interfaces";
+import { Link } from "expo-router";
 import {
   View,
   Text,
@@ -10,6 +15,7 @@ import {
   Pressable,
 } from "react-native";
 import * as ContextMenu from "zeego/context-menu";
+
 const ChatMessage = ({
   content,
   role,
@@ -21,19 +27,20 @@ const ChatMessage = ({
     {
       title: "Copy",
       systemIcon: "doc.on.doc",
-      action: () => console.log("copy"),
+      action: () => copyImageToClipboard(imageUrl!),
     },
     {
       title: "Save to Photos",
       systemIcon: "arrow.down.to.line",
-      action: () => console.log("copy"),
+      action: () => downloadAndSaveImage(imageUrl!),
     },
     {
       title: "Share",
       systemIcon: "square.and.arrow.up",
-      action: () => console.log("copy"),
+      action: () => shareImage(imageUrl!),
     },
   ];
+
   return (
     <View style={styles.row}>
       {role === Role.Bot ? (
@@ -45,25 +52,33 @@ const ChatMessage = ({
         </View>
       ) : (
         <Image
-          source={require("@/assets/images/avatar.png")}
+          source={{ uri: "https://galaxies.dev/img/meerkat_2.jpg" }}
           style={styles.avatar}
         />
       )}
+
       {loading ? (
         <View style={styles.loading}>
-          <ActivityIndicator size="small" color={Colors.primary} />
+          <ActivityIndicator color={Colors.primary} size="small" />
         </View>
       ) : (
         <>
           {content === "" && imageUrl ? (
             <ContextMenu.Root>
               <ContextMenu.Trigger>
+                {/* <Link
+                  href={`/(auth)/(modal)/image/${encodeURIComponent(
+                    imageUrl
+                  )}?prompt=${encodeURIComponent(prompt!)}`}
+                  asChild
+                > */}
                 <Pressable>
                   <Image
                     source={{ uri: imageUrl }}
                     style={styles.previewImage}
                   />
                 </Pressable>
+                {/* </Link> */}
               </ContextMenu.Trigger>
               {/* @ts-ignore */}
               <ContextMenu.Content>
@@ -81,14 +96,13 @@ const ChatMessage = ({
               </ContextMenu.Content>
             </ContextMenu.Root>
           ) : (
-            <Text>{content}</Text>
+            <Text style={styles.text}>{content}</Text>
           )}
         </>
       )}
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
@@ -129,5 +143,4 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
 });
-
 export default ChatMessage;

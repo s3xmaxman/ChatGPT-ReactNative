@@ -4,6 +4,21 @@ import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import { Alert } from "react-native";
 
+/**
+ * 画像をダウンロードして保存する関数
+ *
+ * この関数は指定されたURLから画像をダウンロードし、デバイスのストレージに保存します。
+ * 主な仕様:
+ * - 画像は「Download」アルバムに保存されます。
+ * - アルバムが存在しない場合は新しく作成されます。
+ *
+ * 制限事項:
+ * - メディアライブラリへのアクセス許可が必要です。
+ *
+ * @param {string} imageUrl - ダウンロードする画像のURL
+ * @returns {Promise<void>} - 処理が完了したら解決されるPromise
+ * @throws {Error} - ダウンロードまたは保存中にエラーが発生した場合
+ */
 export const downloadAndSaveImage = async (imageUrl: string) => {
   let fileUri = FileSystem.documentDirectory + `${new Date().getTime()}.jpg`;
 
@@ -15,6 +30,15 @@ export const downloadAndSaveImage = async (imageUrl: string) => {
   }
 };
 
+/**
+ * ファイルを保存する関数
+ *
+ * この関数は指定されたURIのファイルをメディアライブラリに保存します。
+ *
+ * @param {string} fileUri - 保存するファイルのURI
+ * @returns {Promise<void>} - 処理が完了したら解決されるPromise
+ * @throws {Error} - 保存中にエラーが発生した場合
+ */
 const saveFile = async (fileUri: string) => {
   const { status } = await MediaLibrary.requestPermissionsAsync();
   if (status === "granted") {
@@ -30,7 +54,7 @@ const saveFile = async (fileUri: string) => {
         );
 
         if (result) {
-          Alert.alert("Image saved to Photos");
+          Alert.alert("画像が写真に保存されました");
         }
       } else {
         const result = await MediaLibrary.addAssetsToAlbumAsync(
@@ -40,17 +64,26 @@ const saveFile = async (fileUri: string) => {
         );
 
         if (result) {
-          Alert.alert("Image saved to Photos");
+          Alert.alert("画像が写真に保存されました");
         }
       }
     } catch (error) {
       console.log("saveFile error", error);
     }
   } else if (status === "denied") {
-    Alert.alert("please allow permissions to download");
+    Alert.alert("ダウンロードのための権限を許可してください");
   }
 };
 
+/**
+ * 画像をクリップボードにコピーする関数
+ *
+ * この関数は指定されたURLから画像をダウンロードし、Base64形式でクリップボードにコピーします。
+ *
+ * @param {string} imageUrl - コピーする画像のURL
+ * @returns {Promise<void>} - 処理が完了したら解決されるPromise
+ * @throws {Error} - ダウンロードまたはコピー中にエラーが発生した場合
+ */
 export const copyImageToClipboard = async (imageUrl: string) => {
   let fileUriCopy =
     FileSystem.documentDirectory + `${new Date().getTime()}.jpg`;
@@ -67,6 +100,14 @@ export const copyImageToClipboard = async (imageUrl: string) => {
   }
 };
 
+/**
+ * 画像を共有する関数
+ *
+ * この関数は指定されたURLの画像を共有します。
+ *
+ * @param {string} imageUrl - 共有する画像のURL
+ * @returns {Promise<void>} - 処理が完了したら解決されるPromise
+ */
 export const shareImage = async (imageUrl: string) => {
   Sharing.shareAsync(imageUrl);
 };

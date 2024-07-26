@@ -17,6 +17,23 @@ const ChatMessage = ({
   prompt,
   loading,
 }: Message & { loading?: boolean }) => {
+  const contextItems = [
+    {
+      title: "Copy",
+      systemIcon: "doc.on.doc",
+      action: () => console.log("copy"),
+    },
+    {
+      title: "Save to Photos",
+      systemIcon: "arrow.down.to.line",
+      action: () => console.log("copy"),
+    },
+    {
+      title: "Share",
+      systemIcon: "square.and.arrow.up",
+      action: () => console.log("copy"),
+    },
+  ];
   return (
     <View style={styles.row}>
       {role === Role.Bot ? (
@@ -48,6 +65,20 @@ const ChatMessage = ({
                   />
                 </Pressable>
               </ContextMenu.Trigger>
+              {/* @ts-ignore */}
+              <ContextMenu.Content>
+                {contextItems.map((item, index) => (
+                  <ContextMenu.Item key={item.title} onSelect={item.action}>
+                    <ContextMenu.ItemTitle>{item.title}</ContextMenu.ItemTitle>
+                    <ContextMenu.ItemIcon
+                      ios={{
+                        name: item.systemIcon,
+                        pointSize: 18,
+                      }}
+                    />
+                  </ContextMenu.Item>
+                ))}
+              </ContextMenu.Content>
             </ContextMenu.Root>
           ) : (
             <Text>{content}</Text>

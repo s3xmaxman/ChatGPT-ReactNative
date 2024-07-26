@@ -34,7 +34,7 @@ const Page = () => {
   const [key, setKey] = useMMKVString("apikey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
   const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(dummyMessages);
   const [working, setWorking] = useState(false);
 
   if (!key || key === "" || !organization || organization === "") {

@@ -37,7 +37,6 @@ export const CustomDrawerContent = (props: any) => {
             underlineColorAndroid="transparent"
           />
         </View>
-        <Text>Header</Text>
       </View>
       <DrawerContentScrollView {...props}>
         <DrawerItemList {...props} />

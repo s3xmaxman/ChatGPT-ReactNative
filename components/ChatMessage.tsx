@@ -66,19 +66,19 @@ const ChatMessage = ({
           {content === "" && imageUrl ? (
             <ContextMenu.Root>
               <ContextMenu.Trigger>
-                {/* <Link
+                <Link
                   href={`/(auth)/(modal)/image/${encodeURIComponent(
                     imageUrl
                   )}?prompt=${encodeURIComponent(prompt!)}`}
                   asChild
-                > */}
-                <Pressable>
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={styles.previewImage}
-                  />
-                </Pressable>
-                {/* </Link> */}
+                >
+                  <Pressable>
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.previewImage}
+                    />
+                  </Pressable>
+                </Link>
               </ContextMenu.Trigger>
               {/* @ts-ignore */}
               <ContextMenu.Content>

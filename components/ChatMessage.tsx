@@ -67,7 +67,7 @@ const ChatMessage = ({
             <ContextMenu.Root>
               <ContextMenu.Trigger>
                 <Link
-                  href={`/(auth)/(modal)/image/${encodeURIComponent(
+                  href={`/(auth)/(modal)/${encodeURIComponent(
                     imageUrl
                   )}?prompt=${encodeURIComponent(prompt!)}`}
                   asChild

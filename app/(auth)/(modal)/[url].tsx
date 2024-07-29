@@ -1,23 +1,59 @@
-import { View, Text, StyleSheet } from "react-native";
-import React from "react";
-import { useLocalSearchParams } from "expo-router";
+import { Ionicons, Octicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { Stack, useLocalSearchParams } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ImageZoom } from "@likashefqet/react-native-image-zoom";
+import { downloadAndSaveImage, shareImage } from "@/utils/Image";
+import DropDownMenu from "@/components/DropDownMenu";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { useCallback, useMemo, useRef } from "react";
 import Colors from "@/constants/Colors";
-import { BlurView } from "expo-blur";
+import { defaultStyles } from "@/constants/Styles";
+import * as Clipboard from "expo-clipboard";
+import Toast from "react-native-root-toast";
+import { RootSiblingParent } from "react-native-root-siblings";
 
 const page = () => {
   const { url, params } = useLocalSearchParams<{
     url: string;
     params?: string;
   }>();
-
   const { bottom } = useSafeAreaInsets();
+
+  if (!url) return;
+
   const onCopyPrompt = () => {
     console.log("copied");
   };
+
+  const handlePresentModalPres = () => {};
+
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <DropDownMenu
+              items={[
+                { key: "1", title: "View prompt", icon: "info.circle" },
+                { key: "2", title: "Learn more", icon: "questionmark.circle" },
+              ]}
+              onSelect={handlePresentModalPres}
+            />
+          ),
+        }}
+      />
       <ImageZoom
         uri={url}
         style={styles.image}
@@ -29,8 +65,40 @@ const page = () => {
         isDoubleTapEnabled
         resizeMode="contain"
       />
-      <BlurView intensity={95} tint="dark" style={[styles.blurview]}>
-        <View></View>
+
+      <BlurView
+        intensity={95}
+        tint={"dark"}
+        style={[styles.blurview, { paddingBottom: bottom }]}
+      >
+        <View style={styles.row}>
+          <TouchableOpacity style={{ alignItems: "center" }}>
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={24}
+              color="white"
+            />
+            <Text style={styles.btnText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center" }}>
+            <Ionicons name="brush-outline" size={24} color="white" />
+            <Text style={styles.btnText}>Select</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: "center" }}
+            onPress={() => downloadAndSaveImage(url)}
+          >
+            <Octicons name="download" size={24} color="white" />
+            <Text style={styles.btnText}>Save</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: "center" }}
+            onPress={() => shareImage(url)}
+          >
+            <Octicons name="share" size={24} color="white" />
+            <Text style={styles.btnText}>Share</Text>
+          </TouchableOpacity>
+        </View>
       </BlurView>
     </View>
   );

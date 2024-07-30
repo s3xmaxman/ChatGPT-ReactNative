@@ -16,7 +16,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   let currentDbVersion = result?.user_version ?? 0; // 現在のデータベースバージョンを取得
 
   if (currentDbVersion >= DATABASE_VERSION) {
-    return; // バージョンが最新の場合は何もしない
+    return;
   }
 
   if (currentDbVersion === 0) {

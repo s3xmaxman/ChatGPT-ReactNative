@@ -52,7 +52,7 @@ const ChatMessage = ({
         </View>
       ) : (
         <Image
-          source={{ uri: "https://galaxies.dev/img/meerkat_2.jpg" }}
+          source={require("@/assets/images/avatar.png")}
           style={styles.avatar}
         />
       )}

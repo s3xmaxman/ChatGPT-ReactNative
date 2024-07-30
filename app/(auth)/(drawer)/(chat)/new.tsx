@@ -20,6 +20,8 @@ import { FlashList } from "@shopify/flash-list";
 import { useMMKVString } from "react-native-mmkv";
 import { keyStorage, storage } from "@/utils/Storage";
 import OpenAI from "react-native-openai";
+import { useSQLiteContext } from "expo-sqlite";
+import { addChat } from "@/utils/Database";
 
 const DUMMY_MESSAGES: Message[] = [
   {
@@ -38,7 +40,10 @@ const Page = () => {
   const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
   const [key, setKey] = useMMKVString("apikey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(DUMMY_MESSAGES);
+
+  const db = useSQLiteContext();
+  const [chatId, setChatId] = useState<string | null>("");
 
   if (!key || key === "" || !organization || organization === "") {
     return <Redirect href={"/(auth)/(modal)/settings"} />;
@@ -51,8 +56,9 @@ const Page = () => {
     });
   }, []);
 
-  const getCompletion = (message: string) => {
+  const getCompletion = async (message: string) => {
     if (messages.length === 0) {
+      const result = await addChat(db, message);
     }
 
     setMessages([

@@ -58,8 +58,17 @@ const sections = [
 
 const explore = () => {
   return (
-    <View>
-      <Text>explore</Text>
+    <View style={styles.container}>
+      <Drawer.Screen
+        options={{
+          headerRight: () => (
+            <TouchableOpacity style={{ marginRight: 16 }}>
+              <Ionicons name="search" size={24} color={Colors.grey} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <ScrollView></ScrollView>
     </View>
   );
 };

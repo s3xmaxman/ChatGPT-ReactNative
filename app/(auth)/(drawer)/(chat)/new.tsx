@@ -7,9 +7,9 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@clerk/clerk-expo";
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useLocalSearchParams } from "expo-router";
 import { defaultStyles } from "@/constants/Styles";
 import HeaderDropDown from "@/components/HeaderDropDown";
 import MessageInput from "@/components/MessageInput";
@@ -21,7 +21,7 @@ import { useMMKVString } from "react-native-mmkv";
 import { keyStorage, storage } from "@/utils/Storage";
 import OpenAI from "react-native-openai";
 import { useSQLiteContext } from "expo-sqlite";
-import { addChat } from "@/utils/Database";
+import { addChat, addMessage } from "@/utils/Database";
 
 const DUMMY_MESSAGES: Message[] = [
   {
@@ -40,10 +40,17 @@ const Page = () => {
   const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
   const [key, setKey] = useMMKVString("apikey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
-  const [messages, setMessages] = useState<Message[]>(DUMMY_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>([]);
+  let { id } = useLocalSearchParams<{ id: string }>();
 
   const db = useSQLiteContext();
-  const [chatId, setChatId] = useState<string | null>("");
+  const [chatId, _setChatId] = useState(id!);
+  const chatIdRef = useRef(chatId);
+
+  function setChatId(id: string) {
+    chatIdRef.current = id;
+    _setChatId(id);
+  }
 
   if (!key || key === "" || !organization || organization === "") {
     return <Redirect href={"/(auth)/(modal)/settings"} />;
@@ -59,6 +66,12 @@ const Page = () => {
   const getCompletion = async (message: string) => {
     if (messages.length === 0) {
       const result = await addChat(db, message);
+      const chatID = result.lastInsertRowId;
+      setChatId(chatID.toString());
+      addMessage(db, chatID, {
+        content: message,
+        role: Role.User,
+      });
     }
 
     setMessages([
@@ -86,7 +99,10 @@ const Page = () => {
       }
 
       if (payload.choices[0].finish_reason) {
-        console.log("stream ended");
+        addMessage(db, parseInt(chatIdRef.current), {
+          content: messages[messages.length - 1].content,
+          role: Role.Bot,
+        });
       }
     };
 

@@ -4,11 +4,12 @@ import { Stack, useRouter } from "expo-router";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { SQLiteProvider } from "expo-sqlite/next";
+import { migrateDbIfNeeded } from "@/utils/Database";
 
 const Layout = () => {
   const router = useRouter();
   return (
-    <SQLiteProvider databaseName="chats.db">
+    <SQLiteProvider databaseName="chats.db" onInit={migrateDbIfNeeded}>
       <Stack>
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
         <Stack.Screen

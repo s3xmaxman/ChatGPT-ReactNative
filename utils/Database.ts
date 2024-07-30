@@ -21,7 +21,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
   if (currentDbVersion === 0) {
     const result = await db.execAsync(`
-      PRAGMA journal_mode = 'wal'; // WALモードを設定
+      PRAGMA journal_mode = 'wal'; 
       CREATE TABLE chats (
       id INTEGER PRIMARY KEY NOT NULL, 
       title TEXT NOT NULL

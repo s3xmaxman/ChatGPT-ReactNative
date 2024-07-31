@@ -1,52 +1,46 @@
-import {
-  View,
-  Text,
-  Button,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Image,
-} from "react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "@clerk/clerk-expo";
-import { Redirect, Stack, useLocalSearchParams } from "expo-router";
-import { defaultStyles } from "@/constants/Styles";
 import HeaderDropDown from "@/components/HeaderDropDown";
 import MessageInput from "@/components/MessageInput";
-import MessageIdeas from "@/components/MessageIdeas";
-import { Message, Role } from "@/utils/Interfaces";
-import ChatMessage from "@/components/ChatMessage";
-import { FlashList } from "@shopify/flash-list";
-import { useMMKVString } from "react-native-mmkv";
+import { defaultStyles } from "@/constants/Styles";
 import { keyStorage, storage } from "@/utils/Storage";
+import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Image,
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { useMMKVString } from "react-native-mmkv";
 import OpenAI from "react-native-openai";
-import { useSQLiteContext } from "expo-sqlite";
+import { FlashList } from "@shopify/flash-list";
+import ChatMessage from "@/components/ChatMessage";
+import { Message, Role } from "@/utils/Interfaces";
+import MessageIdeas from "@/components/MessageIdeas";
 import { addChat, addMessage, getMessages } from "@/utils/Database";
-
-const DUMMY_MESSAGES: Message[] = [
-  {
-    content: "Hello, how are you?",
-    role: Role.Bot,
-  },
-  {
-    content: "I'm doing well, thank you!",
-    role: Role.User,
-  },
-];
+import { useSQLiteContext } from "expo-sqlite/next";
 
 const ChatPage = () => {
-  const { signOut } = useAuth();
-  const [height, setHeight] = useState(0);
   const [gptVersion, setGptVersion] = useMMKVString("gptVersion", storage);
+  const [height, setHeight] = useState(0);
   const [key, setKey] = useMMKVString("apikey", keyStorage);
   const [organization, setOrganization] = useMMKVString("org", keyStorage);
   const [messages, setMessages] = useState<Message[]>([]);
+  const db = useSQLiteContext();
   let { id } = useLocalSearchParams<{ id: string }>();
 
-  const db = useSQLiteContext();
-  const [chatId, _setChatId] = useState(id!);
-  const chatIdRef = useRef(chatId);
+  if (!id) {
+    id = "";
+  }
 
+  if (!key || key === "" || !organization || organization === "") {
+    return <Redirect href={"/(auth)/(modal)/settings"} />;
+  }
+
+  const [chatId, _setChatId] = useState(id);
+  const chatIdRef = useRef(chatId);
+  // https://stackoverflow.com/questions/55265255/react-usestate-hook-event-handler-using-initial-state
   function setChatId(id: string) {
     chatIdRef.current = id;
     _setChatId(id);
@@ -54,76 +48,81 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (id) {
-      console.log("Load for Chat ID", id);
-      getMessages(db, parseInt(id)).then((messages) => {
-        setMessages(messages);
+      getMessages(db, parseInt(id)).then((res) => {
+        setMessages(res);
       });
     }
   }, [id]);
 
-  if (!key || key === "" || !organization || organization === "") {
-    return <Redirect href={"/(auth)/(modal)/settings"} />;
-  }
-
-  const openAI = useMemo(() => {
-    return new OpenAI({
-      apiKey: key,
-      organization,
-    });
-  }, []);
-
-  const getCompletion = async (message: string) => {
-    if (messages.length === 0) {
-      const result = await addChat(db, message);
-      const chatID = result.lastInsertRowId;
-      setChatId(chatID.toString());
-      addMessage(db, chatID, {
-        content: message,
-        role: Role.User,
-      });
-    }
-
-    setMessages([
-      ...messages,
-      { content: message, role: Role.User },
-      { role: Role.Bot, content: "" },
-    ]);
-
-    openAI.chat.stream({
-      messages: [{ role: "user", content: message }],
-      model: gptVersion === "4" ? "gpt-4o" : "gpt-4o-mini",
-    });
-  };
+  const openAI = useMemo(
+    () =>
+      new OpenAI({
+        apiKey: key,
+        organization,
+      }),
+    []
+  );
 
   useEffect(() => {
-    const handleMessage = (payload: any) => {
-      const newMessages = payload.choices[0]?.delta.content;
-
-      if (newMessages) {
-        setMessages((messages) => {
-          messages[messages.length - 1].content += newMessages;
+    const handleNewMessage = (payload: any) => {
+      setMessages((messages) => {
+        const newMessage = payload.choices[0]?.delta.content;
+        if (newMessage) {
+          messages[messages.length - 1].content += newMessage;
           return [...messages];
-        });
-      }
+        }
+        if (payload.choices[0]?.finishReason) {
+          // save the last message
 
-      if (payload.choices[0].finish_reason) {
-        addMessage(db, parseInt(chatIdRef.current), {
-          content: messages[messages.length - 1].content,
-          role: Role.Bot,
-        });
-      }
+          addMessage(db, parseInt(chatIdRef.current), {
+            content: messages[messages.length - 1].content,
+            role: Role.Bot,
+          });
+        }
+        return messages;
+      });
     };
 
-    openAI.chat.addListener("onChatMessageReceived", handleMessage);
+    openAI.chat.addListener("onChatMessageReceived", handleNewMessage);
 
     return () => {
       openAI.chat.removeListener("onChatMessageReceived");
     };
   }, [openAI]);
 
+  const onGptVersionChange = (version: string) => {
+    setGptVersion(version);
+  };
+
   const onLayout = (event: any) => {
     const { height } = event.nativeEvent.layout;
     setHeight(height / 2);
+  };
+
+  const getCompletion = async (text: string) => {
+    if (messages.length === 0) {
+      addChat(db, text).then((res) => {
+        const chatID = res.lastInsertRowId;
+        setChatId(chatID.toString());
+        addMessage(db, chatID, { content: text, role: Role.User });
+      });
+    }
+
+    setMessages([
+      ...messages,
+      { role: Role.User, content: text },
+      { role: Role.Bot, content: "" },
+    ]);
+    messages.push();
+    openAI.chat.stream({
+      messages: [
+        {
+          role: "user",
+          content: text,
+        },
+      ],
+      model: gptVersion === "4" ? "gpt-4o-mini" : "gpt-4o-mini",
+    });
   };
 
   return (
@@ -133,20 +132,18 @@ const ChatPage = () => {
           headerTitle: () => (
             <HeaderDropDown
               title="ChatGPT"
-              onSelect={(key) => {
-                setGptVersion(key);
-              }}
-              selected={gptVersion}
               items={[
                 { key: "3.5", title: "GPT-4o mini", icon: "bolt" },
                 { key: "4", title: "GPT-4o", icon: "sparkles" },
               ]}
+              onSelect={onGptVersionChange}
+              selected={gptVersion}
             />
           ),
         }}
       />
       <View style={styles.page} onLayout={onLayout}>
-        {messages.length === 0 && (
+        {messages.length == 0 && (
           <View style={[styles.logoContainer, { marginTop: height / 2 - 100 }]}>
             <Image
               source={require("@/assets/images/logo-white.png")}
@@ -162,9 +159,10 @@ const ChatPage = () => {
           keyboardDismissMode="on-drag"
         />
       </View>
+
       <KeyboardAvoidingView
-        keyboardVerticalOffset={70}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={70}
         style={{
           position: "absolute",
           bottom: 0,
@@ -198,5 +196,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
 export default ChatPage;

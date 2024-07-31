@@ -5,22 +5,74 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Keyboard,
+  useWindowDimensions,
+  Alert,
 } from "react-native";
 import {
   DrawerContentScrollView,
   DrawerItemList,
   DrawerItem,
+  useDrawerStatus,
 } from "@react-navigation/drawer";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Drawer } from "expo-router/drawer";
 import Colors from "@/constants/Colors";
 import { Link, useNavigation, useRouter } from "expo-router";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Chat } from "@/utils/Interfaces";
+import { useSQLiteContext } from "expo-sqlite";
+import { getChats, renameChat } from "@/utils/Database";
+import * as ContextMenu from "zeego/context-menu";
 
 export const CustomDrawerContent = (props: any) => {
   const { bottom, top } = useSafeAreaInsets();
+  const isDrawerOpen = useDrawerStatus() === "open";
+  const [history, setHistory] = useState<Chat[]>([]);
+  const db = useSQLiteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    loadChats();
+    Keyboard.dismiss();
+  }, [isDrawerOpen]);
+
+  const loadChats = async () => {
+    const result = (await getChats(db)) as Chat[];
+    setHistory(result);
+  };
+
+  const onDeleteChat = (chatId: number) => {
+    Alert.alert("チャットの削除", "本当にこのチャットを削除しますか？", [
+      {
+        text: "キャンセル",
+        style: "cancel",
+      },
+      {
+        text: "削除",
+        onPress: async () => {
+          await db.runAsync("DELETE FROM chats WHERE id = ?", chatId);
+          loadChats();
+        },
+      },
+    ]);
+  };
+
+  const onRenameChat = (chatId: number) => {
+    Alert.prompt(
+      "チャットの名前変更",
+      "新しいチャット名を入力してください",
+      async (newName) => {
+        if (newName) {
+          await renameChat(db, chatId, newName);
+          loadChats();
+        }
+      }
+    );
+  };
+
   return (
     <View style={{ flex: 1, paddingTop: top }}>
       <View style={{ backgroundColor: "#fff", paddingBottom: 10 }}>
@@ -38,8 +90,66 @@ export const CustomDrawerContent = (props: any) => {
           />
         </View>
       </View>
-      <DrawerContentScrollView {...props}>
+      <DrawerContentScrollView
+        {...props}
+        contentContainerStyle={{ backgroundColor: "#fff", paddingTop: 0 }}
+      >
         <DrawerItemList {...props} />
+        {history.map((chat) => (
+          <ContextMenu.Root key={chat.id}>
+            <ContextMenu.Trigger>
+              <DrawerItem
+                label={chat.title}
+                onPress={() =>
+                  router.push(`/(auth)/(drawer)/(chat)/${chat.id}`)
+                }
+                inactiveTintColor="#000"
+              />
+            </ContextMenu.Trigger>
+            {/* @ts-ignore */}
+            <ContextMenu.Content>
+              <ContextMenu.Preview>
+                {() => (
+                  <View
+                    style={{
+                      padding: 16,
+                      height: 200,
+                      backgroundColor: "#fff",
+                    }}
+                  >
+                    <Text>{chat.title}</Text>
+                  </View>
+                )}
+              </ContextMenu.Preview>
+
+              <ContextMenu.Item
+                key={"rename"}
+                onSelect={() => onRenameChat(chat.id)}
+              >
+                <ContextMenu.ItemTitle>Rename</ContextMenu.ItemTitle>
+                <ContextMenu.ItemIcon
+                  ios={{
+                    name: "pencil",
+                    pointSize: 18,
+                  }}
+                />
+              </ContextMenu.Item>
+              <ContextMenu.Item
+                key={"delete"}
+                onSelect={() => onDeleteChat(chat.id)}
+                destructive
+              >
+                <ContextMenu.ItemTitle>Delete</ContextMenu.ItemTitle>
+                <ContextMenu.ItemIcon
+                  ios={{
+                    name: "trash",
+                    pointSize: 18,
+                  }}
+                />
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Root>
+        ))}
       </DrawerContentScrollView>
 
       <View
@@ -70,6 +180,7 @@ export const CustomDrawerContent = (props: any) => {
 
 const Layout = () => {
   const navigation = useNavigation();
+  const dimensions = useWindowDimensions();
   const router = useRouter();
   return (
     <Drawer
@@ -90,6 +201,10 @@ const Layout = () => {
         drawerActiveBackgroundColor: Colors.selected,
         drawerActiveTintColor: "#000",
         drawerInactiveTintColor: "#000",
+        overlayColor: "rgba(0, 0, 0, 0.2)",
+        drawerItemStyle: { borderRadius: 12 },
+        drawerLabelStyle: { marginLeft: -20 },
+        drawerStyle: { width: dimensions.width * 0.86 },
       }}
     >
       <Drawer.Screen

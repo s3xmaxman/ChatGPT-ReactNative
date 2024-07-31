@@ -76,6 +76,7 @@ const Page = () => {
           </TouchableOpacity>
         </>
       )}
+
       <View style={{ marginTop: 20 }}>
         <Button
           title="Sign Out"

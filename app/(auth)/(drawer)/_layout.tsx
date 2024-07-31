@@ -167,10 +167,10 @@ export const CustomDrawerContent = (props: any) => {
         <Link href="/(auth)/(modal)/settings" asChild>
           <TouchableOpacity style={styles.footer}>
             <Image
-              source={{ uri: "https://galaxies.dev/img/meerkat_2.jpg" }}
+              source={require("../../../assets/images/avatar.png")}
               style={styles.avatar}
             />
-            <Text style={styles.userName}>Mika Meerkat</Text>
+            <Text style={styles.userName}>s3xmaxman</Text>
             <Ionicons
               name="ellipsis-horizontal"
               size={24}

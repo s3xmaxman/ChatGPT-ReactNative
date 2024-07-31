@@ -21,19 +21,19 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
   if (currentDbVersion === 0) {
     const result = await db.execAsync(`
-      PRAGMA journal_mode = 'wal'; 
+      PRAGMA journal_mode = 'wal';
       CREATE TABLE chats (
-      id INTEGER PRIMARY KEY NOT NULL, 
+      id INTEGER PRIMARY KEY NOT NULL,
       title TEXT NOT NULL
       );
-  
+
       CREATE TABLE messages (
-      id INTEGER PRIMARY KEY NOT NULL, 
-      chat_id INTEGER NOT NULL, 
-      content TEXT NOT NULL, 
-      imageUrl TEXT, 
-      role TEXT, 
-      prompt TEXT, 
+      id INTEGER PRIMARY KEY NOT NULL,
+      chat_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      imageUrl TEXT,
+      role TEXT,
+      prompt TEXT,
       FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
       );
    `);

@@ -1,37 +1,38 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  Keyboard,
-  useWindowDimensions,
-  Alert,
-} from "react-native";
+import { Drawer } from "expo-router/drawer";
 import {
   DrawerContentScrollView,
   DrawerItemList,
   DrawerItem,
-  useDrawerStatus,
 } from "@react-navigation/drawer";
-import React, { useEffect, useState } from "react";
-import { Drawer } from "expo-router/drawer";
-import Colors from "@/constants/Colors";
 import { Link, useNavigation, useRouter } from "expo-router";
-import { FontAwesome6, Ionicons } from "@expo/vector-icons";
-import { DrawerActions } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Chat } from "@/utils/Interfaces";
-import { useSQLiteContext } from "expo-sqlite";
+import {
+  Image,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+  TextInput,
+  Alert,
+} from "react-native";
+import Colors from "@/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome6 } from "@expo/vector-icons";
+import { DrawerActions } from "@react-navigation/native";
+import { useEffect, useState } from "react";
 import { getChats, renameChat } from "@/utils/Database";
+import { useSQLiteContext } from "expo-sqlite/next";
+import { useDrawerStatus } from "@react-navigation/drawer";
+import { Chat } from "@/utils/Interfaces";
 import * as ContextMenu from "zeego/context-menu";
+import { Keyboard } from "react-native";
 
 export const CustomDrawerContent = (props: any) => {
   const { bottom, top } = useSafeAreaInsets();
+  const db = useSQLiteContext();
   const isDrawerOpen = useDrawerStatus() === "open";
   const [history, setHistory] = useState<Chat[]>([]);
-  const db = useSQLiteContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -40,19 +41,21 @@ export const CustomDrawerContent = (props: any) => {
   }, [isDrawerOpen]);
 
   const loadChats = async () => {
+    // Load chats from SQLite
     const result = (await getChats(db)) as Chat[];
     setHistory(result);
   };
 
   const onDeleteChat = (chatId: number) => {
-    Alert.alert("チャットの削除", "本当にこのチャットを削除しますか？", [
+    Alert.alert("Delete Chat", "Are you sure you want to delete this chat?", [
       {
-        text: "キャンセル",
+        text: "Cancel",
         style: "cancel",
       },
       {
-        text: "削除",
+        text: "Delete",
         onPress: async () => {
+          // Delete the chat
           await db.runAsync("DELETE FROM chats WHERE id = ?", chatId);
           loadChats();
         },
@@ -62,10 +65,11 @@ export const CustomDrawerContent = (props: any) => {
 
   const onRenameChat = (chatId: number) => {
     Alert.prompt(
-      "チャットの名前変更",
-      "新しいチャット名を入力してください",
+      "Rename Chat",
+      "Enter a new name for the chat",
       async (newName) => {
         if (newName) {
+          // Rename the chat
           await renameChat(db, chatId, newName);
           loadChats();
         }
@@ -74,13 +78,13 @@ export const CustomDrawerContent = (props: any) => {
   };
 
   return (
-    <View style={{ flex: 1, paddingTop: top }}>
+    <View style={{ flex: 1, marginTop: top }}>
       <View style={{ backgroundColor: "#fff", paddingBottom: 10 }}>
         <View style={styles.searchSection}>
           <Ionicons
+            style={styles.searchIcon}
             name="search"
             size={20}
-            style={styles.searchIcon}
             color={Colors.greyLight}
           />
           <TextInput
@@ -90,6 +94,7 @@ export const CustomDrawerContent = (props: any) => {
           />
         </View>
       </View>
+
       <DrawerContentScrollView
         {...props}
         contentContainerStyle={{ backgroundColor: "#fff", paddingTop: 0 }}
@@ -162,10 +167,10 @@ export const CustomDrawerContent = (props: any) => {
         <Link href="/(auth)/(modal)/settings" asChild>
           <TouchableOpacity style={styles.footer}>
             <Image
-              source={require("@/assets/images/avatar.png")}
+              source={{ uri: "https://galaxies.dev/img/meerkat_2.jpg" }}
               style={styles.avatar}
             />
-            <Text style={styles.userName}>s3xmaxman</Text>
+            <Text style={styles.userName}>Mika Meerkat</Text>
             <Ionicons
               name="ellipsis-horizontal"
               size={24}
@@ -182,6 +187,7 @@ const Layout = () => {
   const navigation = useNavigation();
   const dimensions = useWindowDimensions();
   const router = useRouter();
+
   return (
     <Drawer
       drawerContent={CustomDrawerContent}
@@ -270,11 +276,7 @@ const Layout = () => {
         listeners={{
           drawerItemPress: (e) => {
             e.preventDefault();
-            if (false) {
-              router.navigate("/(auth)/(modal)/purchase");
-            } else {
-              router.navigate("/(auth)/dalle");
-            }
+            router.navigate("/(auth)/dalle");
           },
         }}
       />

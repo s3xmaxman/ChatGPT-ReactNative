@@ -30,9 +30,7 @@ const ChatPage = () => {
   const db = useSQLiteContext();
   let { id } = useLocalSearchParams<{ id: string }>();
 
-  if (!id) {
-    return;
-  }
+  console.log("id: ", id);
 
   if (!key || key === "" || !organization || organization === "") {
     return <Redirect href={"/(auth)/(modal)/settings"} />;
@@ -74,7 +72,7 @@ const ChatPage = () => {
         if (payload.choices[0]?.finishReason) {
           // save the last message
 
-          addMessage(db, parseInt(chatIdRef.current), {
+          addMessage(db, parseInt(chatIdRef.current!), {
             content: messages[messages.length - 1].content,
             role: Role.Bot,
           });

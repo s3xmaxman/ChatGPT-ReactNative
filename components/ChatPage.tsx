@@ -31,7 +31,7 @@ const ChatPage = () => {
   let { id } = useLocalSearchParams<{ id: string }>();
 
   if (!id) {
-    id = "";
+    return;
   }
 
   if (!key || key === "" || !organization || organization === "") {
